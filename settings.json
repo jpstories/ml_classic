@@ -1,0 +1,33 @@
+{
+    "update.showReleaseNotes": false,
+    "workbench.colorTheme": "Obsidian Radiance Dark",
+    "workbench.colorCustomizations": {
+        // Цвет текста всех обычных файлов в боковой панели
+        "sideBar.foreground": "#aeaeaed4",
+        // Цвет текста для выбранного (активного) файла
+        "list.activeSelectionForeground": "#bababa",
+        // Цвет текста при наведении курсора на файл
+        "list.hoverForeground": "#aeaeae",
+            // Цвет для измененных файлов (Modified)
+        "gitDecoration.modifiedResourceForeground": "#cccccc", 
+        
+        // Цвет для новых неотслеживаемых файлов (Untracked)
+        "gitDecoration.untrackedResourceForeground": "#cccccc", 
+        
+        // Цвет для файлов с ошибками/конфликтами (Conflicting)
+        "gitDecoration.conflictingResourceForeground": "#cccccc", 
+        
+        // Цвет для игнорируемых файлов (Ignored)
+        "gitDecoration.ignoredResourceForeground": "#666666"
+    },
+    "editor.fontFamily": "'JetBrains Mono', Consolas, monospace",
+    "editor.fontLigatures": true,
+    "editor.fontSize": 14,
+    "editor.lineHeight": 1.6,
+    "editor.rulers": [
+        120
+    ],
+    "remote.SSH.remotePlatform": {
+        "mntk-local": "linux"
+    },
+}
