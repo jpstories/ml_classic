@@ -64,18 +64,17 @@ class KNearestNeighbor(object):
           is the Euclidean distance between the ith test point and the jth training
           point.
         """
-        num_test = X.shape[0]
-        num_train = self.X_train.shape[0]
-        dists = np.zeros((num_test, num_train))
-        for i in range(num_test):
-            for j in range(num_train):
-                #####################################################################
-                # TODO:                                                             #
-                # Compute the l2 distance between the ith test point and the jth    #
-                # training point, and store the result in dists[i, j]. You should   #
-                # not use a loop over dimension, nor use np.linalg.norm().          #
-                #####################################################################
-                pass
+        # Легковесный метод Через раскрытие квадрата (200мб vs 570гб в broadcasting)
+        
+        # 1. Считаем квадраты норм для строк X (num_test, 1) и self.X_train (num_train,)
+        x_squares = np.sum(X**2, axis=1, keepdims=True)
+        y_squares = np.sum(self.X_train**2, axis=1)
+        
+        # 2. Быстрое матричное умножение через BLAS под капотом (num_test, num_train)
+        xy_prod = np.dot(X, self.X_train.T)
+        
+        # 3. Складываем по формуле a^2 + b^2 - 2ab и убираем микро-минусы из-за точности float
+        dists = np.sqrt(np.clip(x_squares + y_squares - 2 * xy_prod, a_min=0, a_max=None))
         return dists
 
     def compute_distances_one_loop(self, X):
