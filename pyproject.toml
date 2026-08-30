@@ -26,4 +26,5 @@ dependencies = [
     "psutil>=5.9.0",
     "scipy>=1.11.0",
     "pytest>=9.1.1",
+    "pygame>=2.6.1",
 ]
