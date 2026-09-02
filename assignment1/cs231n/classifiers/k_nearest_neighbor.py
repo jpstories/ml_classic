@@ -2,6 +2,7 @@ from builtins import range
 from builtins import object
 import numpy as np
 from collections import Counter
+import math
 
 
 class KNearestNeighbor(object):
@@ -34,7 +35,8 @@ class KNearestNeighbor(object):
         dists = np.zeros((num_test, num_train))
         for i in range(num_test):
             for j in range(num_train):
-                dists[i, j] = np.sqrt(np.sum((X[i] - self.X_train[j])**2))
+                # вычитаем r g b из r g b, смотрим разницу двух картинок
+                dists[i, j] = math.sqrt(((X[i] - self.X_train[j])**2).sum())
         return dists
         
     # 2. (middle)
