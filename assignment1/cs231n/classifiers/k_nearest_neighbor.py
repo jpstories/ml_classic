@@ -46,30 +46,47 @@ class KNearestNeighbor(object):
         dists = np.zeros((num_test, num_train))
         for i in range(num_test):
             dists[i, :] = np.sqrt(np.sum((self.X_train - X[i]) ** 2, axis=1))
-        return dists
+        return dists 
 
     # 3. (fast)
     def compute_distances_no_loops(self, X):
         num_test = X.shape[0]
         num_train = self.X_train.shape[0]
         dists = np.zeros((num_test, num_train))
-        X_squared = np.sum(X**2, axis=1, keepdims=True)
-        X_train_squared = np.sum(self.X_train**2, axis=1)
-        two_X_X_train = 2 * np.dot(X, self.X_train.T)
-        # сложнейший расчет за один шаг за счет keepdims=True
-        dists = np.sqrt(X_squared - two_X_X_train + X_train_squared)
+
+        # keepdims вернет матрицу (не вектор)
+        X_squared = np.sum(X**2, axis=1, keepdims=True) # матрица (500, 1)
+        X_train_squared = np.sum(self.X_train**2, axis=1) # вектор (5000,)
+        X_X_train = 2 * np.dot(X, self.X_train.T) # (M × N) × (N × K) = (500 × 5000)
+
+        # Original:     (500, 1)    (500, 5000)      (5000,)
+        # Broadcasting: (500, 5000) (500, 5000) (500, 5000)
+
+        # X_squared виртуально расширяется вправо до (500, 5000)
+        # X_train_squared виртуально расширяется вниз до (500, 5000)
+        dists = np.sqrt(X_squared - X_X_train + X_train_squared)
         return dists
 
     def predict_labels(self, dists, k=1):
+
+        # Готовим место под ответы
         num_test = dists.shape[0]
         y_pred = np.zeros(num_test)
+
+        # Цикл выполнится 500 раз
         for i in range(num_test):
             closest_y = []
+            # Берем 5000 расстояний у 1 картинки 
+            # np.argsort - возвращает индексы в порядке возрастания
+            # [:k] берет первые k элементов
             closest_idxs = np.argsort(dists[i, :])[:k]
+            # Получает классы соседей (тип картинки)
             closest_y = self.y_train[closest_idxs]
+            # Считаем сколько раз встретился каждый класс среди соседей
             counts = Counter(closest_y)
-            # приоритет отдается максимальной частоте
+            # Приоритет отдается максимальной частоте, выбирается класс-победитель
             most_common_label = min(counts.keys(), key=lambda x: (-counts[x], x))
+            # Записываем победителя
             y_pred[i] = most_common_label
 
         return y_pred
