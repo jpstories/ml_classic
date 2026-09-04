@@ -1,0 +1,49 @@
+# Использует стандартный, ванильный образ vLLM (vllm/vllm-openai:v0.26.0)
+# Запускается через классический CLI-интерфейс vLLM (vllm serve) 
+# Без дополнительных систем спекулятивного ускорения (nospec — no speculative).
+
+# Имеет чуть меньшее контекстное окно в 128k токенов (--max-model-len=131072) 
+# Стандартные парсеры инструментов (--tool-call-parser=deepseek_v4) от команды vLLM
+name: deepseek-v4-flash-0731-nospec
+
+services:
+  vllm:
+    image: vllm/vllm-openai:v0.26.0-ubuntu2404
+    container_name: deepseek-v4-flash-0731-nospec
+
+    network_mode: host
+    ipc: host
+    init: true
+    gpus: all
+    shm_size: "64gb"
+    restart: unless-stopped
+
+    environment:
+      CUDA_VISIBLE_DEVICES: "0,1,2,3"
+      PYTORCH_CUDA_ALLOC_CONF: expandable_segments:True
+
+    volumes:
+      - /home/user/models/DeepSeek-Flash:/model:ro
+      - /home/user/vllm-cache:/root/.cache
+
+    entrypoint:
+      - vllm
+      - serve
+
+    command:
+      - /model
+      - --host=0.0.0.0
+      - --port=8000
+      - --served-model-name=deepseek-v4-flash-0731
+      - --trust-remote-code
+      - --kv-cache-dtype=fp8
+      - --block-size=256
+      - --tensor-parallel-size=4
+      - --no-enable-flashinfer-autotune
+      - --tokenizer-mode=deepseek_v4
+      - --tool-call-parser=deepseek_v4
+      - --enable-auto-tool-choice
+      - --reasoning-parser=deepseek_v4
+      - --max-model-len=131072
+      - --max-num-seqs=64
+      - --max-num-batched-tokens=8192

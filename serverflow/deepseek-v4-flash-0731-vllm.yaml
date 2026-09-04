@@ -1,0 +1,56 @@
+# Использует кастомный, глубоко оптимизированный образ voipmonitor/vllm и бэкенд lucifer-cutlass
+# Включает специфичный для DeepSeek режим спекулятивного или дистиллированного декодирования
+# Использует загрузчик instanttensor для моментального старта и агрессивный тюнинг ENABLE_FLASHINFER_AUTOTUNE
+
+# Сконфигурирован на экстремальное контекстное окно 192k токенов
+# Кастомный скрипт запуска entrypoint: /usr/local/bin/serve-ds4-flash.sh (инструменты зашиты в образе)
+name: deepseek-v4-flash-0731-vllm
+
+services:
+  vllm:
+    image: voipmonitor/vllm:gilded-gnosis-v20-vllm966d57c-sihbbdccc-fi801d57a-d132-262
+    container_name: deepseek-v4-flash-0731
+
+    network_mode: host
+    ipc: host
+    privileged: true
+    init: true
+    gpus: all
+    shm_size: "32gb"
+    restart: unless-stopped
+
+    entrypoint:
+      - /usr/local/bin/serve-ds4-flash.sh
+
+    environment:
+      CUDA_VISIBLE_DEVICES: "0,1,2,3"
+
+      MODEL_PATH: /model
+      SERVED_MODEL_NAME: deepseek-v4-flash-0731
+      HOST: "0.0.0.0"
+      PORT: "8000"
+
+      MODE: dspark
+      BACKEND: lucifer-cutlass
+      TP_SIZE: "4"
+      DCP_SIZE: "1"
+
+      DSPARK_DEPTH_MODE: fixed
+      DSPARK_TOKENS: "5"
+
+      MAX_NUM_SEQS: "128"
+      MAX_MODEL_LEN: "196608"
+      MAX_NUM_BATCHED_TOKENS: "8192"
+      GPU_MEMORY_UTILIZATION: "0.965"
+
+      LOAD_FORMAT: instanttensor
+      INSTANTTENSOR_BACKEND: BUFFERED
+      PYTHONHASHSEED: "0"
+      KV_OFFLOADING_SIZE: "0"
+      PREFIX_CACHE: "1"
+      ENABLE_FLASHINFER_AUTOTUNE: "1"
+
+    volumes:
+      - /home/user/models/DeepSeek-Flash:/model:ro
+      - /home/user/vllm-cache:/cache
+      - /home/user/vllm-tmp:/container-tmp
